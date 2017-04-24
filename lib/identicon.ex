@@ -71,12 +71,36 @@ defmodule Identicon do
     %Identicon.Image{image | grid: grid}
   end
 
+  @doc """
+    Helper function
+
+  ## Example
+      iex> Identicon.mirror_row([1, 2, 4])
+      [1, 2, 4, 2, 1]
+  """
   def mirror_row(row) do
     [first, second | _tail] = row
 
     row ++ [second, first]
   end
 
+  @doc """
+    Returns a new Identicon.Image struct
+
+    Removes all odd hex values from the `grid` list.
+
+  ## Example
+      iex> image = Identicon.hash_input('hoyups')
+      iex> image = Identicon.pick_color(image)
+      iex> image = Identicon.build_grid(image)
+      iex> Identicon.filter_odd_squares(image)
+      %Identicon.Image{color: {58, 80, 136},
+      grid: [{58, 0}, {80, 1}, {136, 2}, {80, 3}, {58, 4}, {92, 5}, {134, 6},
+        {134, 8}, {92, 9}, {78, 10}, {78, 14}, {220, 15}, {240, 17}, {220, 19},
+        {82, 21}, {0, 22}, {82, 23}],
+      hex: [58, 80, 136, 92, 134, 191, 78, 25, 5, 220, 245, 240, 83, 82, 0, 40],
+      pixel_map: nil}
+  """
   def filter_odd_squares(%Identicon.Image{grid: grid} = image) do
     grid = Enum.filter grid, fn({code, _index}) ->
       rem(code, 2) == 0
@@ -84,6 +108,28 @@ defmodule Identicon do
 
     %Identicon.Image{image | grid: grid}
   end
+
+  @doc """
+    Saves to Identicon.Image structs as `grid`
+
+  ## Example
+      iex> image = Identicon.hash_input('hoyups')
+      iex> image = Identicon.pick_color(image)
+      iex> image = Identicon.build_grid(image)
+      iex> image = Identicon.filter_odd_squares(image)
+      iex> Identicon.build_pixel_map(image)
+      %Identicon.Image{color: {58, 80, 136},
+      grid: [{58, 0}, {80, 1}, {136, 2}, {80, 3}, {58, 4}, {92, 5}, {134, 6},
+      {134, 8}, {92, 9}, {78, 10}, {78, 14}, {220, 15}, {240, 17}, {220, 19},
+      {82, 21}, {0, 22}, {82, 23}],
+      hex: [58, 80, 136, 92, 134, 191, 78, 25, 5, 220, 245, 240, 83, 82, 0, 40],
+      pixel_map: [{{0, 0}, {50, 50}}, {{50, 0}, {100, 50}}, {{100, 0}, {150, 50}},
+      {{150, 0}, {200, 50}}, {{200, 0}, {250, 50}}, {{0, 50}, {50, 100}},
+      {{50, 50}, {100, 100}}, {{150, 50}, {200, 100}}, {{200, 50}, {250, 100}},
+      {{0, 100}, {50, 150}}, {{200, 100}, {250, 150}}, {{0, 150}, {50, 200}},
+      {{100, 150}, {150, 200}}, {{200, 150}, {250, 200}}, {{50, 200}, {100, 250}},
+      {{100, 200}, {150, 250}}, {{150, 200}, {200, 250}}]}
+  """
 
   def build_pixel_map(%Identicon.Image{grid: grid} = image) do
     pixel_map = Enum.map grid, fn({_code, index}) ->
@@ -99,6 +145,10 @@ defmodule Identicon do
     %Identicon.Image{image | pixel_map: pixel_map}
   end
 
+  @doc """
+    Returns an image buffer Image representation of the Identicon.Image
+  """
+
   def draw_image(%Identicon.Image{color: color, pixel_map: pixel_map}) do
     image = :egd.create(250, 250)
     fill = :egd.color(color)
@@ -110,6 +160,9 @@ defmodule Identicon do
     :egd.render(image)
   end
 
+  @doc """
+    Writes an image buffer to the file system.
+  """
   def save_image(image, input) do
     File.write("#{input}.png", image)
   end
