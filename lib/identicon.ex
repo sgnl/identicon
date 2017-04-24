@@ -1,4 +1,9 @@
 defmodule Identicon do
+  @moduledoc"""
+    Will produce an Image, similar to GitHubs generic profile image
+    for new accounts, based on the String input given.
+  """
+
   def main(input) do
     input
     |> hash_input
@@ -10,16 +15,51 @@ defmodule Identicon do
     |> save_image(input)
   end
 
+  @doc """
+    Returns an Identicon.Image struct with an md5 hash of the given a String argument stored at the property named: `hex`.
+
+  ## Examples
+      iex> Identicon.hash_input('hoyups')
+      %Identicon.Image{color: nil, grid: nil,
+      hex: [58, 80, 136, 92, 134, 191, 78, 25, 5, 220, 245, 240, 83, 82, 0, 40],
+      pixel_map: nil}
+  """
   def hash_input(input) do
     hex = :crypto.hash(:md5, input)
     |> :binary.bin_to_list
     %Identicon.Image{hex: hex}
   end
 
+  @doc """
+    Saves to Identicon.Image structs as `color`
+
+    Copies first three values to be used as the main color within the image.
+
+  ## Examples
+      iex> image = Identicon.hash_input('hoyups')
+      iex> Identicon.pick_color(image)
+      %Identicon.Image{color: {58, 80, 136}, grid: nil,
+      hex: [58, 80, 136, 92, 134, 191, 78, 25, 5, 220, 245, 240, 83, 82, 0, 40],
+      pixel_map: nil}
+  """
   def pick_color(%Identicon.Image{hex: [r, g, b | _tail]} = image) do
     %Identicon.Image{image | color: {r, g, b}}
   end
 
+  @doc """
+    Saves to Identicon.Image structs as `grid`
+
+  ## Example
+      iex> image = Identicon.hash_input('hoyups')
+      iex> Identicon.build_grid(image)
+      %Identicon.Image{color: nil,
+      grid: [{58, 0}, {80, 1}, {136, 2}, {80, 3}, {58, 4}, {92, 5}, {134, 6},
+      {191, 7}, {134, 8}, {92, 9}, {78, 10}, {25, 11}, {5, 12}, {25, 13}, {78, 14},
+      {220, 15}, {245, 16}, {240, 17}, {245, 18}, {220, 19}, {83, 20}, {82, 21},
+      {0, 22}, {82, 23}, {83, 24}],
+      hex: [58, 80, 136, 92, 134, 191, 78, 25, 5, 220, 245, 240, 83, 82, 0, 40],
+      pixel_map: nil}
+  """
   def build_grid(%Identicon.Image{hex: hex} = image) do
     grid =
       hex
